@@ -4,23 +4,25 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdint.h>
 
 #define die(...) {fprintf(stderr, __VA_ARGS__); exit(EXIT_FAILURE);}
 
 struct node
 {
-	int freq;
-	char data;
+	uint32_t freq;
+	uint8_t data;
 	struct node *lc, *rc, *parent;
 };
 
 void encode(char *fn)
 {
 	FILE *fp;
-	short freq[256], sym = 0, qi=0, nc = 0;
+	uint8_t nc = 0, buf = 0, s = 0;
+	uint16_t sym = 0, qi=0;
+	uint32_t freq[256];
 	struct node *leaf, **wq, *nd = NULL, *bp[256], *tp;
-	unsigned char buf = 0, s = 0;
-	
+
 	if(!(fp = fopen(fn, "r"))) die("Cannot open file '%s'\n", fn);
 
 	// calc frequencies
@@ -52,7 +54,8 @@ void encode(char *fn)
 		for(int i = 0; i < qi; i++) fprintf(stderr, "%d '%c' %d\n", i, wq[i]->data, wq[i]->freq);
 
 		// find the two smallest item
-		int f1 = wq[0]->freq, f2 = wq[1]->freq, idx1 = 0, idx2 = 1;
+		uint32_t f1 = wq[0]->freq, f2 = wq[1]->freq;
+		uint16_t idx1 = 0, idx2 = 1;
 		for(int i = 0; i < qi;  i++) if((wq[i]->freq < f1) && (i != idx2)) f1 = wq[idx1 = i]->freq;
 		for(int i = 0; i < qi;  i++) if((wq[i]->freq < f2) && (i != idx1)) f2 = wq[idx2 = i]->freq;
 
@@ -79,7 +82,7 @@ void encode(char *fn)
 	for(int tmp; (tmp = fgetc(fp)) != EOF;)
 	{
 		// if we can encode this
-		if(tp = bp[tmp])
+		if((tp = bp[tmp]))
 		{
 			assert(tp->parent);
 			// get the path until we arrive to the root node
