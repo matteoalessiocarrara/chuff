@@ -16,12 +16,12 @@ struct node
 
 void encode(char *fn)
 {
-	FILE *fp = fopen(fn, "r");
+	FILE *fp;
 	short freq[256], sym = 0, qi=0, nc = 0;
 	struct node *leaf, **wq, *nd = NULL, *bp[256], *tp;
 	unsigned char buf = 0, s = 0;
 	
-	if(!fp) die("Cannot open file '%s'\n", fn);
+	if(!(fp = fopen(fn, "r"))) die("Cannot open file '%s'\n", fn);
 
 	// calc frequencies
 	for(short i = 0; i < 256; i++) freq[i] = 0;
@@ -29,6 +29,7 @@ void encode(char *fn)
 	
 	// calc used symbols
 	for(short i = 0; i < 256; i++) if(freq[i]) sym++;
+	if(!sym) die("There is nothing to do...\n");
 	
 	// initializes the tree structure
 	leaf = calloc(sym, sizeof(struct node));
@@ -110,8 +111,8 @@ void encode(char *fn)
 	fclose(fp);
 }
 
-int main()
+int main(int argc, char **argv)
 {
-	encode("./testinput");
-	return 0;
+	if(argc < 2) die("Usage: hf filename\n");
+	encode(argv[1]);
 }
