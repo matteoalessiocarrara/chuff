@@ -50,17 +50,12 @@ void encode(char *fn)
 	
 	while(qi > 2)
 	{
-		fprintf(stderr, "*********************queue\n");
-		for(int i = 0; i < qi; i++) fprintf(stderr, "%d '%c' %d\n", i, wq[i]->data, wq[i]->freq);
-
 		// find the two smallest item
 		uint32_t f1 = wq[0]->freq, f2 = wq[1]->freq;
 		uint16_t idx1 = 0, idx2 = 1;
 		for(int i = 0; i < qi;  i++) if((wq[i]->freq < f1) && (i != idx2)) f1 = wq[idx1 = i]->freq;
 		for(int i = 0; i < qi;  i++) if((wq[i]->freq < f2) && (i != idx1)) f2 = wq[idx2 = i]->freq;
 
-		fprintf(stderr, "SMALLEST: %d '%c' = %d %d '%c' = %d\n", idx1, wq[idx1]->data, wq[idx1]->freq, idx2, wq[idx2]->data, wq[idx2]->freq);
-		
 		// create a parent node with them as child
 		nd = realloc(nd, sizeof(struct node) * ++nc);
 		nd[nc - 1] = (struct node){f1 + f2, 0, wq[idx1], wq[idx2], NULL};
@@ -76,7 +71,8 @@ void encode(char *fn)
 	nd = realloc(nd, sizeof(struct node) * ++nc);
 	nd[nc - 1] = (struct node){wq[0]->freq + wq[1]->freq, 0, wq[0], wq[1], NULL};
 	wq[0]->parent = wq[1]->parent = nd + (nc - 1);
-	
+
+
 	// start encoding of the file
 	rewind(fp);
 	for(int tmp; (tmp = fgetc(fp)) != EOF;)
@@ -84,7 +80,6 @@ void encode(char *fn)
 		// if we can encode this
 		if((tp = bp[tmp]))
 		{
-			assert(tp->parent);
 			// get the path until we arrive to the root node
 			do
 			{
@@ -100,7 +95,6 @@ void encode(char *fn)
 				else if(tp->parent->rc == tp)
 				{
 					buf |= (1 << s++);
-
 				}
 				else die("Invalid node references\n");
 				tp = tp->parent;
